@@ -24,7 +24,6 @@ int main() {
 
 	char window_name[] = "Video";
 	Mat frame;
-	Mat mat_buffer;
 
 	WSADATA wsaData;
 	WORD version;
@@ -110,7 +109,7 @@ int main() {
 			buffer.data()[i] = buf;
 		}
 		
-		frame = imdecode(buffer,CV_LOAD_IMAGE_COLOR, &mat_buffer); 
+		imdecode(buffer,CV_LOAD_IMAGE_COLOR, &frame); 
 		
 		//Send integers
 		error = send(client, (char *)&command1_t, sizeof(int), 0);
