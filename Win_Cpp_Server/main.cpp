@@ -8,13 +8,23 @@
 #include <Windows.h>
 #include <iostream>
 
+#include "opencv2/objdetect.hpp"
+#include "opencv2/videoio.hpp"
+#include "opencv2/highgui.hpp"
+#include "opencv2/imgproc.hpp"
+
 //#pragma comment(lib, "Ws2_32.lib")  // Or alternatively add this library in the additional dependencies in the property sheet
 
 using namespace std;
+using namespace cv;
 
 int main() {
 	char eduroam_pc_ip[] = "10.89.131.94";
 	char myRouter_pc_ip[] = "192.168.1.101";
+
+	char window_name[] = "Video";
+	Mat frame;
+	Mat mat_buffer;
 
 	WSADATA wsaData;
 	WORD version;
@@ -61,45 +71,57 @@ int main() {
 	SOCKET client;
 	int length = sizeof sin;
 
-	//string s = to_string(sizeof (int));
-	//cout << s << endl;
-
 	while (true) {
 		SOCKET client;
-		client = socket(AF_INET, SOCK_STREAM, NULL);
-		
-		printf("Waiting for incoming connection...\n");
+		client = socket(AF_INET, SOCK_STREAM, NULL);		
 		client = accept(server, (SOCKADDR*)&sin, &length);
 		
-		printf("A Connection was established!\n");
+		//send integers
+		int32_t command1_t = -200;
+		uint32_t command2_t = 300;
+		command1_t = htonl(command1_t);
+		command2_t = htonl(command2_t);
 
-		//send a message
-		int t1 = -200;
-		int t2 = -300;
-		int32_t test = t1;
-		uint32_t test1 = t2;
-		test = htonl(test);
-		test1 = htonl(test1);
+		//Receive values
+		int32_t size_t;
+		int32_t info1_t;
+		int32_t info2_t;
 
-		//Receive integers
-		int32_t recv1;
-		int32_t recv2;
+		error = recv(client, (char *)&size_t, sizeof int32_t, 0);
+		error = recv(client, (char *)&info1_t, sizeof int32_t, 0);
+		error = recv(client, (char *)&info2_t, sizeof int32_t, 0);
 
-		error = recv(client, (char *)&recv1, 32, 0);
-		error = recv(client, (char *)&recv2, 32, 0);
-
-		recv1 = ntohl(recv1);
-		recv2 = ntohl(recv2);
-		int r1 = recv1;
-		int r2 = recv2;
+		size_t = ntohl(size_t);
+		info1_t = ntohl(info1_t);
+		info2_t = ntohl(info2_t);
+		int size = size_t;
+		int info1 = info1_t;
+		int info2 = info2_t;
 		printf("Received integers: \n");
-		cout << "Get 2 integers! " << endl;
-		cout << r1 << " " << r2 << endl;
+		cout << info1 << " " << info2 << endl;
+		cout << "Received long size: ";
+		cout << size << endl;
+
+		//Receive image frame
+		vector<char> buffer(size);
+		char buf;
+		for (int i = 0; i < size; i++) {
+			error = recv(client, &buf, sizeof(char), 0);
+			buffer.data()[i] = buf;
+		}
+		
+		frame = imdecode(buffer,CV_LOAD_IMAGE_COLOR, &mat_buffer); 
 		
 		//Send integers
-		error = send(client, (char *)&test, sizeof(int), 0);
-		error = send(client, (char *)&test1, sizeof(int), 0);
-		
+		error = send(client, (char *)&command1_t, sizeof(int), 0);
+		error = send(client, (char *)&command2_t, sizeof(int), 0);
+
+		//Show the image frame
+		imshow(window_name, frame);
+
+
+		int c = waitKey(5);
+		if ((char)c == 27) { break; } // escape 
 	}
 
 	WSACleanup();
