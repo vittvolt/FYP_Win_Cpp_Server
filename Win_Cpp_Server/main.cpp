@@ -74,13 +74,29 @@ int main() {
 		printf("A Connection was established!\n");
 
 		//send a message
-		int t1 = 200;
-		int t2 = 300;
-		uint32_t test = t1;
+		int t1 = -200;
+		int t2 = -300;
+		int32_t test = t1;
 		uint32_t test1 = t2;
 		test = htonl(test);
 		test1 = htonl(test1);
+
+		//Receive integers
+		int32_t recv1;
+		int32_t recv2;
+
+		error = recv(client, (char *)&recv1, 32, 0);
+		error = recv(client, (char *)&recv2, 32, 0);
+
+		recv1 = ntohl(recv1);
+		recv2 = ntohl(recv2);
+		int r1 = recv1;
+		int r2 = recv2;
+		printf("Received integers: \n");
+		cout << "Get 2 integers! " << endl;
+		cout << r1 << " " << r2 << endl;
 		
+		//Send integers
 		error = send(client, (char *)&test, sizeof(int), 0);
 		error = send(client, (char *)&test1, sizeof(int), 0);
 		
