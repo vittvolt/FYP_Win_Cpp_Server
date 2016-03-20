@@ -3,6 +3,7 @@
 #include <conio.h>
 #include <stdio.h>
 #include <string>
+#include <iterator>
 
 #include <WinSock2.h>
 #include <Windows.h>
@@ -20,7 +21,7 @@ using namespace cv;
 
 int main() {
 	char eduroam_pc_ip[] = "10.89.131.94";
-	char myRouter_pc_ip[] = "192.168.1.101";
+	char myRouter_pc_ip[] = "192.168.1.103";
 
 	char window_name[] = "Video";
 	Mat frame;
@@ -55,7 +56,7 @@ int main() {
 	memset(&sin, 0, sizeof sin);
 
 	sin.sin_family = AF_INET;
-	sin.sin_addr.s_addr = inet_addr("10.89.131.94");
+	sin.sin_addr.s_addr = inet_addr(eduroam_pc_ip);
 	sin.sin_port = htons(8080);
 
 	if (bind(server, (SOCKADDR*)&sin, sizeof sin) == SOCKET_ERROR)
@@ -102,11 +103,15 @@ int main() {
 		cout << size << endl;
 
 		//Receive image frame
-		vector<char> buffer(size);
-		char buf;
-		for (int i = 0; i < size; i++) {
-			error = recv(client, &buf, sizeof(char), 0);
-			buffer.data()[i] = buf;
+		//vector<char> buffer(size);
+		vector<char> buffer;
+		char buf[1024];
+		int size_read = 0;
+		while(size > 0) {
+			size_read = recv(client, buf, min(size,1024), 0);
+			//buffer.data()[i] = buf;
+			buffer.insert(buffer.end(), buf, buf + size_read);
+			size = size - size_read;
 		}
 		
 		imdecode(buffer,CV_LOAD_IMAGE_COLOR, &frame); 
