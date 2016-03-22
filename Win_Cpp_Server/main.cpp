@@ -30,7 +30,7 @@ int main() {
 	WORD version;
 	int error;
 
-	version = MAKEWORD(2, 0);
+	version = MAKEWORD(2, 2);
 	error = WSAStartup(version, &wsaData);
 	if (error == 0) {
 		printf("Wsa init success!\n");
@@ -40,13 +40,13 @@ int main() {
 		return -1;
 	}
 	/* check for correct version */
-	if (LOBYTE(wsaData.wVersion) != 2 || HIBYTE(wsaData.wVersion) != 0)
+	/*if (LOBYTE(wsaData.wVersion) != 2 || HIBYTE(wsaData.wVersion) != 0)
 	{
-		/* incorrect WinSock version */
+		// incorrect WinSock version 
 		WSACleanup();
 		printf("Incorrect winsock version!");
 		return -1;
-	}
+	} */
 
 	SOCKET server;
 	server = socket(AF_INET, SOCK_STREAM, 0);
